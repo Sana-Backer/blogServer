@@ -12,7 +12,7 @@ blogServer.use(router)
 
 blogServer.use('/uploads', express.static('uploads')); 
 
-const PORT = 3000 || process.env.PORT
+const PORT = 5000 || process.env.PORT
 
 blogServer.listen(PORT, ()=>{   
     console.log(`server started at port ${PORT}`);
