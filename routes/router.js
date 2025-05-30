@@ -3,6 +3,7 @@ const userController = require('../controllers/userControllers');
 const jwtMiddleware = require('../middlewares/jwt');
 const postController = require('../controllers/postController');
 const multerMiddleware = require('../middlewares/multer');
+const commentController = require('../controllers/commentController')
 
 const router = new express.Router();
 
@@ -29,6 +30,9 @@ router.delete('/posts/:id',jwtMiddleware, postController.deletePost);
 router.get('/top-post', postController.topPosts)
 
 // Like post
-router.put('/posts/:id/like', postController.likePost);
+router.put('/posts/:id/like',jwtMiddleware, postController.likePost);
 
+// comment
+router.post('/posts/:id/comment',jwtMiddleware, commentController.addComment);
+router.get('/posts/:id/comment',jwtMiddleware, commentController.getCommentByPostid);
 module.exports = router;

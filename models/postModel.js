@@ -5,8 +5,9 @@ const PostSchema = new mongoose.Schema({
   content: String,
   image: String,
   category: String,
-  likes: { type: Number, default: 0 },
-  author: { type: mongoose.Schema.Types.ObjectId, ref: 'Users' }
+  likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }], // array of user IDs
+  author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
 }, { timestamps: true });
 
-module.exports = mongoose.model('Post', PostSchema);
+const Post = mongoose.model('Post', PostSchema);
+module.exports = Post

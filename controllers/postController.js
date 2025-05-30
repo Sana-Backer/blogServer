@@ -1,4 +1,3 @@
-const Users = require('../models/userModel');
 const Post = require('../models/postModel');
 
 // Create a new post
@@ -49,11 +48,11 @@ exports.getPostByUserId = async (req, res) => {
   console.log("inside getPostByUserIdController");
   try {
     const userId = req.params.id;
+    // Gets all posts where author matches the given user ID.
     const posts = await Post.find({ author: userId })
       .sort({ createdAt: -1 })
       .populate('author', 'username email');
 
-    // Check if the array is empty
     if (posts.length === 0) {
       return res.status(404).json({ error: 'No posts found for this user' });
     }
@@ -136,25 +135,92 @@ exports.deletePost = async (req, res) => {
 };
 // Like post
 exports.likePost = async (req, res) => {
+  log("inside likePostController");
   try {
     const postId = req.params.id;
+    const userId = req.user.id; // Assuming user info from middleware (auth)
 
-    const updatedPost = await Post.findByIdAndUpdate(
-      postId,
-      { $inc: { likes: 1 } },
-      { new: true }
-    );
+    // Find the post
+    const post = await Post.findById(postId);
 
-    if (!updatedPost) {
+    if (!post) {
       return res.status(404).json({ message: 'Post not found' });
     }
 
-    res.status(200).json(updatedPost);
+    // Check if the user already liked the post
+    const hasLiked = post.likes.some(id => id.toString() === userId);
+
+    if (hasLiked) {
+      // If already liked → Unlike → Remove userId
+      post.likes = post.likes.filter(id => id.toString() !== userId);
+    } else {
+      // If not yet liked → Like → Add userId
+      post.likes.push(userId);
+    }
+
+    await post.save();
+
+    res.status(200).json({
+      message: hasLiked ? 'Post unliked' : 'Post liked',
+      post: post  // ✅ return full updated post
+    });
   } catch (error) {
-    console.error("Error liking post:", error);
-    res.status(500).json({ message: "Something went wrong" });
+    console.error("Error toggling like:", error);
+    res.status(500).json({ message: "Something went wrong", error });
   }
-}
+};
+
+
+
+// exports.likePost = async (req, res) => {
+//   try {
+//     const postId = req.params.id;
+
+//     const updatedPost = await Post.findByIdAndUpdate(
+//       postId,
+//       { $inc: { likes: 1 } },
+//       { new: true }
+//     );
+
+//     if (!updatedPost) {
+//       return res.status(404).json({ message: 'Post not found' });
+//     }
+
+//     res.status(200).json(updatedPost);
+//   } catch (error) {
+//     console.error("Error liking post:", error);
+//     res.status(500).json({ message: "Something went wrong" });
+//   }
+// }
+// exports.likePost = async (req, res) => {
+//   try {
+//     const postId = req.params.id;
+//     const userId = req.user.id;
+
+//     const post = await Post.findById(postId);
+//     if (!post) {
+//       return res.status(404).json({ message: 'Post not found' });
+//     }
+
+//     const hasLiked = post.likes.includes(userId);
+
+//     if (hasLiked) {
+//       post.likes = post.likes.filter(id => id.toString() !== userId);
+//     } else {
+//       post.likes.push(userId);
+//     }
+//     await post.save();
+
+//     res.status(200).json({
+//       message: hasLiked ? 'Post unliked' : 'Post liked',
+//       likesCount: post.likes.length,
+//       post,
+//     });
+//   } catch (error) {
+//     console.error("Error toggling like:", error);
+//     res.status(500).json({ message: "Something went wrong" });
+//   }
+// };
 
 // Top post
 exports.topPosts = async (req, res) => {

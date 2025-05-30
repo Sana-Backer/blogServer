@@ -65,7 +65,7 @@ exports.loginController = async (req, res) => {
 // Get All Users Controller
 exports.getAllUsers = async (req, res) => {
     try {
-        const allUsers = await User.find().select('-password'); // Avoid name conflict
+        const allUsers = await User.find().select('-password'); 
         res.status(200).json(allUsers);
     } catch (err) {
         console.error('Failed to fetch users:', err);
